@@ -101,11 +101,11 @@ plotVario(myVarioDirectional2,inches=0.1)
 ### model du vario 2010
 ##########################
 
+# Printing all possible models
 ECov_printAll()
 
 myModel = Model_createFromDb(myDb2010)
-myModel$fit(vario=myVarioOmni,
-            types=ECov_fromKeys(c("NUGGET","SPHERICAL","LINEAR")))
+myModel$fit(vario=myVarioOmni, types=ECov_fromKeys(c("NUGGET","SPHERICAL","LINEAR")))
 #optvar = Option_VarioFit(flag_noreduce = TRUE)) #mauto = Option_AutoFit$setWmode(wmode=2)
 plotModel(myVarioOmni,myModel)
 
