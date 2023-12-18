@@ -150,30 +150,30 @@ myGridCrude = DbGrid_createCoveringDb(dbin=myDb2010,dx=c(20,20))
 db_polygon(myGridCrude, myPoly)
 res <- global_kriging(dbin=myDb2010,dbout=myGridCrude,model=myModel,ivar0=0,verbose=T)
 
-geoEstimStd <- res$sse
+geoEstimStdTest <- res$sse
 
 myGridCrude = DbGrid_createCoveringDb(dbin=myDb2010,dx=c(10,10))
 db_polygon(myGridCrude, myPoly)
 res <- global_kriging(dbin=myDb2010,dbout=myGridCrude,model=myModel,ivar0=0,verbose=T)
 
-geoEstimStd[2] <- res$sse
+geoEstimStdTest[2] <- res$sse
 
 myGridCrude = DbGrid_createCoveringDb(dbin=myDb2010,dx=c(5,5))
 db_polygon(myGridCrude, myPoly)
 res <- global_kriging(dbin=myDb2010,dbout=myGridCrude,model=myModel,ivar0=0,verbose=T)
 
-geoEstimStd[3] <- res$sse
+geoEstimStdTest[3] <- res$sse
 
 myGridCrude = DbGrid_createCoveringDb(dbin=myDb2010,dx=c(2.5,2.5))
 db_polygon(myGridCrude, myPoly)
 res <- global_kriging(dbin=myDb2010,dbout=myGridCrude,model=myModel,ivar0=0,verbose=T)
 
-geoEstimStd[4] <- res$sse
+geoEstimStdTest[4] <- res$sse
 
-plot(c(20,10,5,2.5),geoEstimStd,type="b")
+plot(c(20,10,5,2.5),geoEstimStdTest,type="b")
 #  ==> convergence OK
 
-geoEstimStd <- geoEstimStd[4]
+geoEstimStd <- geoEstimStdTest[4]
 geoEstim <- res$zest
 geoCV <- res$cvgeo
 
