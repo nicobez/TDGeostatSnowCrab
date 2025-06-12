@@ -1,7 +1,7 @@
 ################################
 ### TD Geostatistique 
 ### nicolas.bez@ird.fr
-### octobre 2023
+### octobre 2024
 ################################
 
 rm(list=ls())

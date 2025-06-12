@@ -1,13 +1,24 @@
 ######################
 # Loading libraries
 ######################
+# Installing (if needed) and opening required CRAN libraries
+CRAN_package_list <- c('maps','mapdata','mapproj','wesanderson')
+not_in_list <- CRAN_package_list[!(CRAN_package_list %in% installed.packages())]
+lapply(not_in_list,install.packages,dependencies=TRUE)
+#
+lapply(CRAN_package_list, require, character.only = TRUE)
+# clean
+rm(CRAN_package_list,not_in_list)
+
+# Installing the up-to-date gstlearn library
 install.packages("gstlearn",repos="https://soft.mines-paristech.fr/cran")
 library(gstlearn)
-library(maps)
-library(mapdata)
-library(mapproj)
-library(wesanderson) ; myPalette = wes_palette("Zissou1", 16, type = "continuous")
-library(ggplot2)
+
+# Choosing a color palette
+myPalette = wes_palette("Zissou1", 16, type = "continuous")
+
+# default par
+defPar <- par(no.readonly = TRUE)
 
 ######################
 ### Personnal graphical functions
@@ -20,7 +31,7 @@ plotVario <- function(vario,col=myPalette[c(1,6,13,16)],opacity="80",inches=0.15
   # to get NON transparent colour set opacity="" 
   # Turn the palette color into rgb
   colRgb <- rgb(t(col2rgb(col)),maxColorValue = 255)
-  ndir <- vario$getDirectionNumber()
+  ndir <- vario$getNDir() # 2025/05/26 vario$getDirectionNumber()
   dir <- NULL 
   for(i in 0:(ndir-1)){
     h <- vario$getAllHh(idir=i)
@@ -43,14 +54,14 @@ plotVario <- function(vario,col=myPalette[c(1,6,13,16)],opacity="80",inches=0.15
 }
 
 ####################
-plotModel <- function(vario,model,col=myPalette[c(1,6,13,16)],opacity="80",asCov=F){
+plotVarioModel <- function(vario,model,col=myPalette[c(1,6,13,16)],asCov=F){
   ### Draw model on an existing empirical variogram
   mode = CovCalcMode()
   mode$setAsVario(!asCov)
-  ndir <- vario$getDirectionNumber()
+  nDir <- vario$getNDir()
   plotVario(vario)
   hh <- seq(0,par("usr")[2],length=200)
-  for(i in 0:(ndir-1)){
+  for(i in 0:(nDir-1)){
     codir <- vario$getDirParam(i)$getCodirs()
     gg <- model$sample(hh, codir=codir, mode=mode)
     if(model$getCovName(0) == "Nugget Effect") gg[1] <- model$getSill(0,0,0)
@@ -58,13 +69,33 @@ plotModel <- function(vario,model,col=myPalette[c(1,6,13,16)],opacity="80",asCov
   }
 }
 
+####################
+plotModel <- function(model,hMax=1,dir=t(c(1,0)),col=NULL,asCov=F){
+  ### Draw model 
+  if(is.null(col)) col <- 1:NROW(dir)
+  mode = CovCalcMode()
+  mode$setAsVario(!asCov)
+  nDir <- NROW(dir)
+  plot(c(0,hMax),c(0,model$getTotalSill()),type="n",xaxs="i",yaxs="i",las=1,
+            xlab='Distances',ylab='Variogram',cex.lab=1.5,cex.axis=1.5)
+  hh <- seq(0,hMax,length=200)
+  for(i in 1:nDir){
+    codir <- dir[i,]
+    gg <- model$sample(hh, codir=codir, mode=mode)
+    if(model$getCovName(0) == "Nugget Effect") gg[1] <- model$getSill(0,0,0)
+    lines(hh,gg,col=col[i],lwd=2)
+  }
+}
 
 
 ######################
-plotGrid <- function(grid,varName,col=myPalette,polyName=NULL,title=NULL,coastLine=NULL,legend = T,legendTitle=NULL,...){
+plotGrid <- function(grid,varName,col=myPalette,polyName=NULL,title=NULL,coastLine=NULL,legend = T,legendTitle=NULL,probs=NULL,...){
   # Assumes that par(las=1)
   nx <- grid$getNX(0)
   z <- grid[varName]
+  if(!is.null(probs)){
+    z[z > quantile(z,probs=probs,na.rm=T)] <- quantile(z,probs=probs,na.rm=T)
+  }
   if(legend){
     zLegend <- seq(min(z,na.rm=T),max(z,na.rm=T),length=length(col))
     layout(matrix(c(1,1,1,0,2,0),ncol=2,byrow=F), widths=c(10,1),heights=rep(5,3))
